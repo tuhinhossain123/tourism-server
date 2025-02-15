@@ -27,10 +27,13 @@ async function run() {
 
     const userCollection = client.db("tourism").collection("users");
 
+    // all user get api
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result)
+    });
 
-
-    
-
+    // user created api
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { user: user.email };
