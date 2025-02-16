@@ -8,7 +8,7 @@ const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.taymcgi.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -30,30 +30,36 @@ async function run() {
     // all user get api
     app.get("/users", async (req, res) => {
       try {
-        const page = parseInt(req.query.page) || 1; 
-        const limit = parseInt(req.query.limit) || 10; 
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-        const users = await userCollection.find().skip(skip).limit(limit).toArray();
+        const users = await userCollection
+          .find()
+          .skip(skip)
+          .limit(limit)
+          .toArray();
         const totalUsers = await userCollection.countDocuments();
         const totalPages = Math.ceil(totalUsers / limit);
         res.send({
-          currentPage: page,   
+          currentPage: page,
           limit,
           totalUsers,
           totalPages,
-          users
+          users,
         });
       } catch (error) {
-        res.status(500).send({ error: "An error occurred while fetching users." });
+        res
+          .status(500)
+          .send({ error: "An error occurred while fetching users." });
       }
     });
-    
+
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email: email });
       res.send(result);
     });
-    
+
     // user created api
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -63,6 +69,27 @@ async function run() {
         return res.send({ message: "user already exists", insertedId: null });
       }
       const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // user update admin related api
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    // user deleted api
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     });
 
