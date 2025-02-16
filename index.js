@@ -29,10 +29,31 @@ async function run() {
 
     // all user get api
     app.get("/users", async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result)
+      try {
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 10; 
+        const skip = (page - 1) * limit;
+        const users = await userCollection.find().skip(skip).limit(limit).toArray();
+        const totalUsers = await userCollection.countDocuments();
+        const totalPages = Math.ceil(totalUsers / limit);
+        res.send({
+          currentPage: page,   
+          limit,
+          totalUsers,
+          totalPages,
+          users
+        });
+      } catch (error) {
+        res.status(500).send({ error: "An error occurred while fetching users." });
+      }
     });
-
+    
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+    
     // user created api
     app.post("/users", async (req, res) => {
       const user = req.body;
