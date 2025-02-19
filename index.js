@@ -96,10 +96,18 @@ async function run() {
 
 
 
-    // blog add api
+    // Blogs related api
+    
+    // blog post api
     app.post("/blogs", async (req, res) => {
       const blogsList = req.body;
       const result = await blogsCollection.insertOne(blogsList);
+      res.send(result);
+    });
+
+    // blogs get api
+    app.get("/blogs", async (req, res) => {
+      const result = await blogsCollection.find().toArray();
       res.send(result);
     });
 
