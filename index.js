@@ -26,6 +26,7 @@ async function run() {
     // await client.connect();
 
     const userCollection = client.db("tourism").collection("users");
+    const blogsCollection = client.db("tourism").collection("blogs");
 
     // all user get api
     app.get("/users", async (req, res) => {
@@ -90,6 +91,15 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+
+
+    // blog add api
+    app.post("/blogs", async (req, res) => {
+      const blogsList = req.body;
+      const result = await blogsCollection.insertOne(blogsList);
       res.send(result);
     });
 
