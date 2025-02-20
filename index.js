@@ -94,8 +94,6 @@ async function run() {
       res.send(result);
     });
 
-
-
     // Blogs related api
 
     // blog post api
@@ -104,10 +102,11 @@ async function run() {
       const result = await blogsCollection.insertOne(blogsList);
       res.send(result);
     });
-
     // blogs get api
-    app.get("/blogs", async (req, res) => {
-      const result = await blogsCollection.find().toArray();
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const cursor = { category: decodeURIComponent(id) };
+      const result = await blogsCollection.find(cursor).toArray();
       res.send(result);
     });
 
